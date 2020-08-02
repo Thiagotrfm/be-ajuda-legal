@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-    before_action :authorized, except: [:login, :create]
+    before_action :authorized, except: [:create]
 
     def index
         users = User.order('name ASC');
@@ -34,18 +34,6 @@ class UsersController < ApplicationController
         user = User.find(params[:id])
         user.destroy
         render json: {status: 'SUCCESS', message:'Deleted user', data:@user.as_json(only: [:id, :name, :last_name, :email])}, status: :ok
-    end
-
-
-    def login
-        user = User.find_by(email: params[:email])
-
-        if user && user.authenticate(params[:password])
-            token = encode_token({user_id: user.id})
-            render json: {user: user.as_json(only: [:id, :name, :last_name, :email]), token: token}
-        else
-            render json: {error: "Invalid email or password"}
-        end
     end
 
     private
