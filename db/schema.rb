@@ -18,6 +18,7 @@ ActiveRecord::Schema.define(version: 2020_08_01_222412) do
     t.string "email"
     t.string "password_digest"
     t.string "cpf"
+    t.string "phone"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["cpf"], name: "index_users_on_cpf", unique: true

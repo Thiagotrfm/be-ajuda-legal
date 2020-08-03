@@ -1,3 +1,5 @@
+require "cpf_cnpj"
+
 class UsersController < ApplicationController
     before_action :authorized, except: [:create]
 
@@ -12,12 +14,16 @@ class UsersController < ApplicationController
     end
 
     def create
-        user = User.new(user_params)
-        if user.save
-            token = encode_token({user_id: user.id})
-            render json: {status: 'SUCCESS', message:'Saved user', data:user.as_json(only: [:id, :name, :last_name, :email]), token: token}, status: :ok
+        if user_params[:cpf].present? && CPF.valid?(user_params[:cpf])
+            user = User.new(user_params)
+            if user.save
+                token = encode_token({user_id: user.id})
+                render json: {status: 'SUCCESS', message:'Saved user', data:user.as_json(only: [:id, :name, :last_name, :email]), token: token}, status: :ok
+            else
+                render json: {status: 'ERROR', message:'User not saved', errors:user.errors}, status: :unprocessable_entity
+            end
         else
-            render json: {status: 'ERROR', message:'User not saved', data:user.errors}, status: :unprocessable_entity
+            render json: {status: 'ERROR', message:'Invalid CPF'}, status: :unprocessable_entity
         end
     end
 
@@ -26,7 +32,7 @@ class UsersController < ApplicationController
         if user.update_attributes(user_params)
             render json: {status: 'SUCCESS', message:'Updated user', data:user.as_json(only: [:id, :name, :last_name, :email])}, status: :ok
         else
-            render json: {status: 'ERROR', message:'users not update', data:user.erros}, status: :unprocessable_entity
+            render json: {status: 'ERROR', message:'users not update', errors:user.erros}, status: :unprocessable_entity
         end
     end
 
@@ -38,6 +44,6 @@ class UsersController < ApplicationController
 
     private
     def user_params
-        params.permit(:name, :last_name, :cpf, :email, :password, :password_confirmation)
+        params.permit(:name, :last_name, :cpf, :email, :phone, :password, :password_confirmation)
     end
 end
